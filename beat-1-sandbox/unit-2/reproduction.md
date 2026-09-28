@@ -15,8 +15,7 @@ label is not graded.
 
 **GitHub username**
 
-[Your GitHub username, exactly as it appears on your profile — no `@`, no profile URL. Your
-comments upstream are identified by this name.]
+rdv-chio
 
 ---
 
@@ -24,16 +23,45 @@ comments upstream are identified by this name.]
 
 **Claim comment**
 
-[Link to the comment where you claimed the issue. Use the comment's own permalink, not the
-issue page on its own. **Then paste the text of that comment underneath the link** — the
-pasted text is what this field is graded on, so copy across what you actually posted.]
+https://github.com/codepath/pathreview-ai301-fa26-s3/issues/72#issuecomment-5863245560
+
+Hi maintainers!
+
+I would like to investigate and reproduce this issue regarding `verify_password` raising `UnknownHashError` on malformed stored hashes. I will set up the local environment and test suite, and follow up with a reproduction report shortly.
 
 **Reproduction comment**
 
-[Link to the comment where you posted your reproduction. It must record the environment
-(OS, relevant versions, code state), steps a stranger could follow, and what you observed.
-**Then paste the text of that comment underneath the link** — the pasted text is what this
-field is graded on, so copy across what you actually posted.]
+https://github.com/codepath/pathreview-ai301-fa26-s3/issues/72#issuecomment-5863392140
+
+### Reproduction Report: `verify_password` raises `UnknownHashError` on malformed hash (#72)
+
+**Environment**
+- OS: Linux (Ubuntu via WSL2, kernel 5.15)
+- Python: 3.11.15
+- Dependencies: pytest 9.1.1, passlib 1.7.4
+
+**Steps to Reproduce**
+1. Run pytest targeting the security unit test with `--runxfail` enabled:
+
+   ```bash
+   pytest tests/unit/test_security.py -k "test_verify_with_wrong_hash_format" -v --runxfail
+    ```
+
+# Observed Behavior
+When `pwd_context.verify(plain_password, hashed_password)` executes against an unrecognized or invalid hash format, `passlib` raises an unhandled `passlib.exc.UnknownHashError` instead of returning `False`:
+
+```Plaintext
+FAILED tests/unit/test_security.py::TestSecurity::test_verify_with_wrong_hash_format - passlib.exc.UnknownHashError: hash could not be identified
+
+core/security.py:37: in verify_password
+    return bool(pwd_context.verify(plain_password, hashed_password))
+/home/rociodv/anaconda3/envs/ai201/lib/python3.11/site-packages/passlib/context.py:1132: in identify_record
+>   raise exc.UnknownHashError("hash could not be identified")
+E   passlib.exc.UnknownHashError: hash could not be identified
+```
+
+# Expected Behavior
+`verify_password` should handle or catch `UnknownHashError` and return `False`, failing closed securely rather than propagating an unhandled 500 error exception.
 
 ## Eval iterations
 
@@ -42,28 +70,21 @@ fields.
 
 **Run history**
 
-[The agreement score of each run you did, in order. A single run is a complete answer if
-only one run occurred. **The last score in your list must match the agreement line in the
-`eval-run.txt` you committed** — that file is the record of your final run.]
+19/20
 
 **Package analysis**
 
-[Pick one scored package (`pkg-01` through `pkg-20` — the four `calib-` packages are never
-scored). Name it by id, say what your rubric decided and what the gold label said, and
-explain why your rubric read it that way.]
+pkg-03: The gold label was accept, but our rubric produced reject (failed: policy_compliance). In pkg-03, the repository facts stated a standard contribution policy with no explicit AI restriction, and the candidate did not mention AI assistance. However, our evaluator applied strict scrutiny to policy_compliance, triggering a false-negative rejection on an otherwise clean reproduction package.
 
 **Check rationale**
 
-[Quote one check from the `rubric.md` you uploaded to `tools/repro-check/`, exactly as it reads now.
-Then say why it reads that way — what you revised to get there, or what you rejected in
-favour of it.]
+"| outcome_documented | Repro report observed vs expected behavior | Displays the verbatim output, stack trace, error log, or symptom observed, and explicitly notes what should have happened instead (or confirms failure under test). | required |"
+
+This check was designed after evaluating calib-03 during calibration, where the candidate typed a syntax typo (":" instead of "=") in an HCL key-value pair and encountered a parser error, yet claimed the runtime panic was successfully reproduced. Requiring the verbatim output, stack trace, or symptom to explicitly document the observed behavior against the expected behavior prevents approving false positives where user error masks the reported defect.
 
 **Trade-offs**
 
-[Every check gives something up. Any one of these is a complete answer: a package whose
-result it changes, a canary you re-ran with `--only`, a case you accept it will miss, or a
-stated reason nothing changed elsewhere. "Nothing changed, and here is how I know" earns
-the point in full when the reason follows.]
+By making policy_compliance a required check with strict adherence checks, we ensured our rubric caught the single mandatory disclosure-wall package in the eval set (achieving 1/1 on the disclosure floor). The trade-off was Sonnet becoming overly cautious on pkg-03, rejecting it even though the gold label was accept. Because agreement was 19/20 (comfortably clearing the 18/20 bar) and all categories passed, we kept the check strict rather than loosening it and risking the disclosure canary.
 
 ---
 
