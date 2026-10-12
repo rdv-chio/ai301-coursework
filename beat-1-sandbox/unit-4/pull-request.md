@@ -15,15 +15,11 @@ label is not graded.
 
 **Pull request**
 
-[Link to the pull request you opened. It must be the pull request's own page on the Path
-Review repo, not your fork's branch page.]
+https://github.com/codepath/pathreview-ai301-fa26-s3/pull/159
 
 **Branch**
 
-[The name of the branch the pull request comes from, exactly as it appears in your fork.
-The naming shape is a type prefix, then the issue number, then a short description. **The
-issue number in the branch name must be the number of the issue the pull request fixes** —
-a name carrying any other number does not satisfy this field.]
+fix/72-verify-password-hash
 
 ## Eval iterations
 
@@ -32,28 +28,21 @@ fields.
 
 **Run history**
 
-[The agreement score of each run you did, in order. A single run is a complete answer if
-only one run occurred. **The last score in your list must match the agreement line in the
-`eval-run.txt` you committed** — that file is the record of your final run.]
+20/20
 
 **Package analysis**
 
-[Pick one scored package (`pkg-01` through `pkg-20` — the four `calib-` packages are never
-scored). Name it by id, say what your rubric decided and what the gold label said, and
-explain why your rubric read it that way.]
+pkg-20: The gold label was reject, and our rubric decided reject (failed: standards_compliance). In pkg-20, the candidate authored a clean, bounded fix implementing the maintainer diagnosis with decisive mode-2031 evidence. However, Ghostty's stated repository contribution policy explicitly mandates disclosing all AI usage. Because the candidate PR description omitted the required AI-use disclosure, our rubric evaluated standards_compliance as fail, successfully catching the critical standards-wall category canary.
 
 **Check rationale**
 
-[Quote one check from the `rubric.md` you uploaded to `tools/pr-precheck/`, exactly as it reads now.
-Then say why it reads that way — what you revised to get there, or what you rejected in
-favour of it.]
+"| plan_fidelity | Unified diff and description claims read against plan scope & deviations | The diff implements the planned changes without introducing unannounced scope creep, unrelated refactors, or new configuration flags not in the plan. Any omitted planned item or scope modification must be explicitly documented in plan deviations and stated in the description. The description must not claim changes the diff does not contain. | required |"
+
+This check was designed after evaluating calib-03, where the candidate presented an apparently pristine checklist and claimed fidelity to the plan, yet silently modified an unrelated file (print/property.js) in the diff. Demanding that the diff be directly reconciled against the plan's declared scope boundaries and deviations ensures that unannounced scope drift is caught even when masked by a well-formatted description.
 
 **Trade-offs**
 
-[Every check gives something up. Any one of these is a complete answer: a package whose
-result it changes, a canary you re-ran with `--only`, a case you accept it will miss, or a
-stated reason nothing changed elsewhere. "Nothing changed, and here is how I know" earns
-the point in full when the reason follows.]
+By making standards_compliance a required check that strictly enforces repository templates, checklists, and explicit AI disclosure requirements, we ensured our rubric caught all required standards canaries (such as pkg-01 and pkg-20). The trade-off is that any candidate PR in a repository with mandatory disclosure or template policies is rejected if those requirements are bypassed, even if the underlying code change and test evidence are flawless. This maintains parity with real maintainer review gates and produced a 20/20 agreement score across all evaluation categories.
 
 ---
 
