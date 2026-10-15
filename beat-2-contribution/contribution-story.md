@@ -8,9 +8,8 @@ format criteria grade exactly that. Your course repo link is the whole submissio
 files and no evidence uploads are part of Assignment 5.
 
 **Contribution Number:** [1]
-**Student:** [Student name]
-**GitHub Username:** [your GitHub username, exactly as it appears on your profile - no @, no
-profile URL. Your comments upstream are identified by this name.]
+**Student:** Rocio Dominguez Vidana
+**GitHub Username:** rdv-chio
 **Issue:** [GitHub issue link]
 **Pull Request:** [GitHub PR link, once opened]
 
@@ -55,10 +54,9 @@ happened; these entries are the toolkit's own timeline.
 All four entries are graded. Keep every heading below, and fill each
 one in the week it belongs to.
 
-**Unit 5: [one line on the tool work]**
+**Unit 5: Automated GitHub issue scouting and multi-stage funnel filtering**
 
-[2-4 sentences: what you built (the scout, your strategy), what broke
-or fell short, what changed because of it.]
+I upgraded `issue-select` into `issue-scout`, creating search queries for Python CLI bugs and a ranking pipeline that drops assigned or stale issues. During the live scan, ranking by fewest comments proved to be a no-op because the top 12 results all had zero comments, forcing the tie-breaker (`updatedAt`) to do all the work. Additionally, `repo_active` accepted brand-new, zero-star repos created on the scan date. To address this, I adjusted my strategy to explicitly filter for non-docs bug labels and plan to add a minimum repository star or release threshold to prevent toy projects from passing.
 
 **Unit 6: [one line on the tool work]**
 
