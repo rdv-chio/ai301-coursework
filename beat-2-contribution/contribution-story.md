@@ -1,4 +1,4 @@
-# Contribution: [Issue Title]
+# Contribution: Align date error message with field input format
 
 Path: `beat-2-contribution/contribution-story.md`
 
@@ -10,7 +10,7 @@ files and no evidence uploads are part of Assignment 5.
 **Contribution Number:** [1]
 **Student:** Rocio Dominguez Vidana
 **GitHub Username:** rdv-chio
-**Issue:** [GitHub issue link]
+**Issue:** <https://github.com/HHS/simpler-grants-gov/issues/6192>
 **Pull Request:** [GitHub PR link, once opened]
 
 One repository, built across units 5 to 8, telling the whole story of your real
@@ -58,11 +58,9 @@ one in the week it belongs to.
 
 I upgraded `issue-select` into `issue-scout`, creating search queries for Python CLI bugs and a ranking pipeline that drops assigned or stale issues. During the live scan, ranking by fewest comments proved to be a no-op because the top 12 results all had zero comments, forcing the tie-breaker (`updatedAt`) to do all the work. Additionally, `repo_active` accepted brand-new, zero-star repos created on the scan date. To address this, I adjusted my strategy to explicitly filter for non-docs bug labels and plan to add a minimum repository star or release threshold to prevent toy projects from passing.
 
-**Unit 6: [one line on the tool work]**
+**Unit 6: Outgoing comment enforcement and scoped repository orientation**
 
-[2-4 sentences: the voice-guard, the repo-memory file. What broke or
-fell short, and what changed because of it. "Nothing broke" counts when
-it is true - say how you know.]
+I integrated `voice-guard` as a Claude Code `PreToolUse` hook, establishing a canonical upstream voice guide and blocking unauthorized or unverified outgoing comments. During testing, the doorway intercepted an initial claim draft that lacked an explicit timeframe, enforcing the rule before any public comment went out. I set up a localized `CLAUDE.local.md` file within `.git/info/exclude` to retain environment and testing conventions for `simpler-grants-gov` without polluting pull request diffs.
 
 **Unit 7: [one line on the tool work]**
 
@@ -78,24 +76,18 @@ drafted, what you did with the draft.]
 
 ## Why I Chose This Issue
 
-[1-2 paragraphs in your own words: how you searched, what your scan
-surfaced, what your scout's verdict said, why this issue fits your
-profile, and what you hope to learn. If your scout's verdict on it
-was reject and you chose it anyway, say so here and say why; choosing
-against your own tool silently is what loses points. Close with an
-honest read of the tool itself: where the scout fell short on a real
-wild search and what you changed or would change, or what convinced
-you it held up. **Record the link to your claim comment in this section too.**
-Not claimed yet? Write `claim pending` and today's date where the link goes,
-and add the link the moment your claim lands.]
+I searched for candidates matching my backend and data validation profile, prioritizing Python tasks with concrete input and output specifications. My scout's direct evaluation of `HHS/simpler-grants-gov#6192` yielded an `accept` verdict with a `moderate` difficulty rating, confirming that the repository is active, unarchived, and explicitly welcoming of AI-assisted contributions under its contributing policy. The issue targets an isolated formatting bug where validation error messages on date fields do not align with the expected `MM-DD-YYYY` pattern.
+
+While candidate `dna#127` also passed the required rubric gates, it presented an active, unaccepted claim from another contributor and leaned toward frontend settings UI, conflicting with my personal profile. In contrast, `simpler-grants-gov#6192` had zero assignees, zero competing comments, and a clear acceptance criterion. The scout proved effective at catching conflicting active claims in competing issues, though it initially allowed brand-new repositories during broad scans before scope feasibility filtering was added.
+
+Claim comment: <https://github.com/HHS/simpler-grants-gov/issues/6192#issuecomment-6379656108>
 
 **Toolkit**
 
-- Tool: issue-scout (your scout: your search strategy, your rubric),
-  and how you used it
-- What it produced: [the scan and its verdict on this issue, described]
-- Difficulties: [where it fell short, or "none met" if none did]
-- What changed: [what you patched or would update, or "nothing"]
+- Tool: issue-scout (direct grading mode with the scope-feasible rubric patch)
+- What it produced: An `accept` verdict for `simpler-grants-gov#6192` with all required checks passing and a `moderate` difficulty rating.
+- Difficulties: The scout's literal `issue_unclaimed` rule passed competing candidate `dna#127` despite an unanswered human claim in the thread, requiring manual inspection of comments.
+- What changed: Applied the `scope-feasible` rubric patch to distinguish between bounded tasks and open design edges, using difficulty notes rather than rejecting bounded issues outright.
 
 ---
 
