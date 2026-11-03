@@ -10,8 +10,8 @@ files and no evidence uploads are part of Assignment 5.
 **Contribution Number:** [1]
 **Student:** Rocio Dominguez Vidana
 **GitHub Username:** rdv-chio
-**Issue:** [https://github.com/HHS/simpler-grants-gov/issues/6192](https://github.com/HHS/simpler-grants-gov/issues/6192)
-**Pull Request:** [https://github.com/HHS/simpler-grants-gov/pull/13119](https://github.com/HHS/simpler-grants-gov/pull/13119)
+**Issue:** <https://github.com/HHS/simpler-grants-gov/issues/6192>
+**Pull Request:** <https://github.com/HHS/simpler-grants-gov/pull/13119>
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -66,10 +66,9 @@ I integrated `voice-guard` as a Claude Code `PreToolUse` hook, establishing a ca
 
 I configured `ship-manifest.md` to gate outgoing code against repository test suites and lint rules. When `ship-gate` flagged pre-existing failures on `main` within `withFeatureFlag.test.tsx` and `generalUtils.test.ts`, I isolated the active test check to `applyFormUtils.test.ts` and moved the full test run to the exclusions table with dated justifications. The gate ensured all PR template sections, issue linkage (`Fixes #6192`), and AI disclosures complied with upstream standards prior to opening the pull request.
 
-**Unit 8: [one line on the tool work]**
+**Unit 8: Post-ship monitoring and playbook-driven lifecycle management**
 
-[2-4 sentences: the PR-monitor and your playbook. What it read, what it
-drafted, what you did with the draft.]
+I installed `pr-monitor` and configured `playbook.md` with explicit staleness thresholds (7 calendar days for first review), non-defensive response rules, and walk-away criteria tailored to `simpler-grants-gov`. The live monitor read PR #13119 in a `QUIET` state under a day since opening, drafting an honest wait decision in accordance with my quiet threshold rather than sending an premature nudge.
 
 ---
 
@@ -213,7 +212,7 @@ Implemented date regex pattern matching inside `validationWarningOverrides`. Ini
 
 ## Pull Request
 
-**PR Link:** [https://github.com/HHS/simpler-grants-gov/pull/13119](https://github.com/HHS/simpler-grants-gov/pull/13119)
+**PR Link:** <https://github.com/HHS/simpler-grants-gov/pull/13119>
 
 **PR Description:** Resolves date validation error messages in application forms displaying raw backend ISO `YYYY-MM-DD` strings rather than matching the user-facing `MM-DD-YYYY` format. Updates `validationWarningOverrides` in `applyFormUtils.ts` to reorder date components into `MM-DD-YYYY` with explicit user guidance, handles generic date format strings, and adds unit tests in `applyFormUtils.test.ts`.
 
@@ -223,10 +222,12 @@ Implemented date regex pattern matching inside `validationWarningOverrides`. Ini
 
 **Status:** Awaiting review
 
-- Tool: ship-gate & gh CLI
-- What it produced: Pull request opened successfully against `HHS/simpler-grants-gov:main` with compliant description, issue linkage, and AI disclosure.
-- Difficulties: PR creation initially rejected due to cross-fork branch target mismatch and template heading omissions.
-- What changed: Passed `--head rdv-chio:fix/6192-date-validation-format` and structured `pr_draft.md` to conform to the repo's PR template headings.
+**Toolkit**
+
+- Tool: ship-gate, gh CLI & pr-monitor
+- What it produced: Pull request #13119 opened successfully upstream against `HHS/simpler-grants-gov:main`; pr-monitor confirmed `QUIET` state under a day old and drafted an honest wait note.
+- Difficulties: Cross-fork target mismatch on initial PR submission (`--head rdv-chio:...`), and avoiding premature maintainer pings during initial quiet cycles.
+- What changed: Structured `pr_draft.md` to match repo template sections, passed explicit fork head in `gh pr create`, and enforced a 7-day staleness threshold in `playbook.md` to honor review rhythms.
 
 ---
 
@@ -234,25 +235,24 @@ Implemented date regex pattern matching inside `validationWarningOverrides`. Ini
 
 **Technical Skills Gained**
 
-[What you learned technically, named concretely.]
+- Regex Boundary Handling: Learned to account for extended ISO year lengths (`\d{4,}`) in JavaScript/TypeScript regex engines when transforming serialized dates, preventing partial substring captures like `'2701-01-5760`.
+- Scoped Test Pipeline Isolation: Practiced diagnosing and isolating pre-existing test failures on upstream `main` (`withFeatureFlag.test.tsx` and `generalUtils.test.ts`) using structured manifest exclusion tables rather than hacking unrelated test suites.
+- Automated Gate and Policy Enforcement: Configured and cleared automated ship-gates and lint checks (`@typescript-eslint/no-unused-vars`) prior to code publication.
 
 **Challenges Overcome**
 
-[What was hard and how you solved it; point at the real events, the
-Toolkit blocks above are full of them.]
+- Diagnostic Grounding: Shifted from reproducing the error via component-level mock trees to isolating `validationWarningOverrides` in focused, unmocked unit tests that directly asserted against the maintainers' verbatim error strings.
+- Upstream Review Hygiene: Successfully navigated cross-fork PR creation (`--head rdv-chio:...`) and adhered strictly to upstream template standards, issue linkage (`Fixes #6192`), and AI contribution disclosures.
 
 **What I'd Do Differently Next Time**
 
-[Reflection on your process.]
+- Inspect the exact raw error payloads and schema contracts earlier in the diagnosis phase rather than inferring field names from UI form containers.
+- Check upstream test suite baseline health on `main` before writing local test assertions to immediately identify pre-existing failures.
 
 ---
 
 ## Resources Used
 
-[What actually helped, not a reading list. List things this story
-already shows you using: the doc you followed to set the environment
-up, the thread that explained the bug, the person who answered you.
-One real entry beats ten plausible ones.]
-
-- [Link to documentation that helped]
-- [Discussion, issue, or post that helped]
+- HHS/simpler-grants-gov Contributing Guidelines: <https://github.com/HHS/simpler-grants-gov/blob/main/CONTRIBUTING.md>
+- GitHub Issue #6192 reproduction thread: <https://github.com/HHS/simpler-grants-gov/issues/6192#issuecomment-6590808029>
+- React JSON Schema Form (RJSF) validation documentation for custom error formats
