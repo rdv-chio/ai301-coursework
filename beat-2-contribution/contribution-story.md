@@ -10,8 +10,8 @@ files and no evidence uploads are part of Assignment 5.
 **Contribution Number:** [1]
 **Student:** Rocio Dominguez Vidana
 **GitHub Username:** rdv-chio
-**Issue:** <https://github.com/HHS/simpler-grants-gov/issues/6192>
-**Pull Request:** [GitHub PR link, once opened]
+**Issue:** [https://github.com/HHS/simpler-grants-gov/issues/6192](https://github.com/HHS/simpler-grants-gov/issues/6192)
+**Pull Request:** [https://github.com/HHS/simpler-grants-gov/pull/13119](https://github.com/HHS/simpler-grants-gov/pull/13119)
 
 One repository, built across units 5 to 8, telling the whole story of your real
 contribution. Fill it as you work, not at the end — the sections below ask for evidence that
@@ -62,10 +62,9 @@ I upgraded `issue-select` into `issue-scout`, creating search queries for Python
 
 I integrated `voice-guard` as a Claude Code `PreToolUse` hook, establishing a canonical upstream voice guide and blocking unauthorized or unverified outgoing comments. During testing, the doorway intercepted an initial claim draft that lacked an explicit timeframe, enforcing the rule before any public comment went out. I set up a localized `CLAUDE.local.md` file within `.git/info/exclude` to retain environment and testing conventions for `simpler-grants-gov` without polluting pull request diffs.
 
-**Unit 7: [one line on the tool work]**
+**Unit 7: Automated ship-gate verification and PR template standardization**
 
-[2-4 sentences: the ship-gate and your gate manifest. What it produced
-on your real branch, what fought you, what changed because of it.]
+I configured `ship-manifest.md` to gate outgoing code against repository test suites and lint rules. When `ship-gate` flagged pre-existing failures on `main` within `withFeatureFlag.test.tsx` and `generalUtils.test.ts`, I isolated the active test check to `applyFormUtils.test.ts` and moved the full test run to the exclusions table with dated justifications. The gate ensured all PR template sections, issue linkage (`Fixes #6192`), and AI disclosures complied with upstream standards prior to opening the pull request.
 
 **Unit 8: [one line on the tool work]**
 
@@ -177,65 +176,57 @@ Deliberately out of scope: No changes to backend schema validators, API endpoint
 
 ## Testing Strategy
 
-[What observable checks prove the fix: your reproduction steps re-run
-against the built change (before and after), and the repo's own test
-suite or checks with the outcome shown. "Tests pass" with nothing
-observable named is not a strategy.]
+To verify the date error reformatting without relying on unmocked full server forms:
+
+1. Re-ran the reproduction unit assertion in `applyFormUtils.test.ts` passing the raw backend ISO error string (`'275760-01-01' is not a 'date'`). Verified that the output transformed from the raw failing string (`"275760-01-01 is not a date"`) into `"01-01-275760 is not a valid date. Please use MM-DD-YYYY format."`.
+2. Verified generic date schema errors (`'must match format "date"'`) reformat to `${formattedTitle} must be a valid date in MM-DD-YYYY format.`.
+3. Executed `npm --prefix frontend test -- applyFormUtils.test.ts` passing all 62 tests.
+4. Executed `npm --prefix frontend run lint` confirming 0 lint errors. Pre-existing test failures in `withFeatureFlag.test.tsx` and `generalUtils.test.ts` on `main` were verified and documented in `ship-manifest.md`.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: ship-gate & npm jest/eslint
+- What it produced: Clean pass across 62 unit tests and 0 lint errors, gating automated PR verification.
+- Difficulties: Full test suite failed on `main` due to pre-existing Promise mocks in `withFeatureFlag.test.tsx` and hex escape regex tests in `generalUtils.test.ts`.
+- What changed: Scoped active manifest checks to the touched unit suite (`applyFormUtils.test.ts`) and documented full-suite failures under the `Excluded` manifest table with dated reasons.
 
 ---
 
 ## Implementation Notes
 
-[A running log, added to as you work. Date each entry. What you
-built, decisions you made when you made them, wrong turns included.]
+**2026-11-02**
 
-**[Date]**
+Reproduced the issue locally and posted verbatim Jest output to GitHub issue #6192 (comment 6590808029). Drafted `plan.md` targeting `validationWarningOverrides` in `applyFormUtils.ts`. Evaluated the regex replacement pattern against the issue screenshot to ensure format alignment with `MM-DD-YYYY`.
 
-[Entry]
+**2026-11-03**
 
-**[Date]**
-
-[Entry]
+Implemented date regex pattern matching inside `validationWarningOverrides`. Initial test execution revealed that 6-digit years (such as `275760`) left leading digits intact when matched with `\d{4}`; expanded the capture group to `\d{4,}` to consume extended years cleanly. Resolved TypeScript linting errors regarding unused variables, verified all 62 unit tests passed, and cleared the ship-gate pipeline for PR creation.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: Claude Code, Gemini & git
+- What it produced: Clean commit on branch `fix/6192-date-validation-format` updating `applyFormUtils.ts` and `applyFormUtils.test.ts`.
+- Difficulties: Regex matched only 4 digits of the 6-digit year in the repro case (`2701-01-5760`), and ESLint flagged an unused title variable during defensive parameter handling.
+- What changed: Widened regex year pattern to `\d{4,}` and confined changes strictly to `validationWarningOverrides`.
 
 ---
 
 ## Pull Request
 
-**PR Link:** [GitHub PR URL when opened]
+**PR Link:** [https://github.com/HHS/simpler-grants-gov/pull/13119](https://github.com/HHS/simpler-grants-gov/pull/13119)
 
-**PR Description:** [what the PR says; much of the content above
-adapts into it]
+**PR Description:** Resolves date validation error messages in application forms displaying raw backend ISO `YYYY-MM-DD` strings rather than matching the user-facing `MM-DD-YYYY` format. Updates `validationWarningOverrides` in `applyFormUtils.ts` to reorder date components into `MM-DD-YYYY` with explicit user guidance, handles generic date format strings, and adds unit tests in `applyFormUtils.test.ts`.
 
 **Maintainer Feedback:**
 
-- [Date]: [feedback received, or "none yet"; silence is a normal
-  state and costs you nothing]
-- [Date]: [how you addressed it]
+- 2026-11-03: Opened PR; awaiting initial CI review and maintainer assignment.
 
-**Status:** [Awaiting review / Iterating / Merged / Closed. The
-status is a fact you record, never a grade: the PR is graded as
-opened.]
+**Status:** Awaiting review
 
-**Toolkit**
-
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: ship-gate & gh CLI
+- What it produced: Pull request opened successfully against `HHS/simpler-grants-gov:main` with compliant description, issue linkage, and AI disclosure.
+- Difficulties: PR creation initially rejected due to cross-fork branch target mismatch and template heading omissions.
+- What changed: Passed `--head rdv-chio:fix/6192-date-validation-format` and structured `pr_draft.md` to conform to the repo's PR template headings.
 
 ---
 
