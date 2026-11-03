@@ -109,6 +109,13 @@ The frontend renders the raw backend ISO error string (`"275760-01-01 is not a d
 - `frontend/src/utils/applyForm/applyFormUtils.test.ts`
 - Target date form fields across `OpportunityEditForm.tsx` and related grantor form schemas.
 
+**Toolkit**
+
+- Tool: Claude Code, Gemini & ast-grep / ripgrep
+- What it produced: Traced the unformatted backend ISO string directly to `validationWarningOverrides` in `applyFormUtils.ts`.
+- Difficulties: Multiple form wrappers in `OpportunityEditForm` obscured where runtime validation warning strings were actually normalized.
+- What changed: Bypassed top-level React JSON Schema Form component trees to inspect utility string transformations directly.
+
 ---
 
 ## Reproduction Process

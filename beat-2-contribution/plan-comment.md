@@ -1,0 +1,3 @@
+In reproducing #6192 against `formatValidationWarning` in `src/utils/applyForm/applyFormUtils.ts`, passing the backend error `'275760-01-01' is not a 'date'` yielded `"275760-01-01 is not a date"`, confirming the formatter retains the raw ISO format rather than the required MM-DD-YYYY format (repro findings posted to the issue thread).
+
+I plan to update `validationWarningOverrides` in `applyFormUtils.ts` to transform ISO date strings in date format errors into MM-DD-YYYY (e.g. `MM-DD-YYYY is not a valid date. Please use MM-DD-YYYY format.`) and add unit test coverage in `applyFormUtils.test.ts`. I will open a PR with these changes within one week.
