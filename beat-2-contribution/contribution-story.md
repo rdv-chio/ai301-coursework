@@ -95,26 +95,21 @@ Claim comment: <https://github.com/HHS/simpler-grants-gov/issues/6192#issuecomme
 
 **Problem Description**
 
-[In your own words, what is broken or missing?]
+When a user enters an invalid or out-of-range date (such as `01/01/275760`), the backend validation engine returns an ISO 8601 validation error string. The frontend validation warning pipeline strips quotes from the error message but does not translate the ISO date pattern (`YYYY-MM-DD`) into the expected `MM-DD-YYYY` user format, producing confusing feedback that conflicts with the form field's helper text and placeholder.
 
 **Expected Behavior**
 
-[What should happen?]
+Per the acceptance criteria of Issue #6192, validation error messages on date fields should read back using the `MM-DD-YYYY` format to match user input expectations and form instructions.
 
 **Current Behavior**
 
-[What actually happens?]
+The frontend renders the raw backend ISO error string (`"275760-01-01 is not a date"`), failing to provide format guidance or translate the date format into `MM-DD-YYYY`.
 
 **Affected Components**
 
-[Which parts of the codebase are involved?]
-
-**Toolkit**
-
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- `frontend/src/utils/applyForm/applyFormUtils.ts` (`formatValidationWarning` and `validationWarningOverrides`)
+- `frontend/src/utils/applyForm/applyFormUtils.test.ts`
+- Target date form fields across `OpportunityEditForm.tsx` and related grantor form schemas.
 
 ---
 
@@ -122,31 +117,34 @@ Claim comment: <https://github.com/HHS/simpler-grants-gov/issues/6192#issuecomme
 
 **Environment Setup**
 
-[What a stranger would need to stand this up: your operating system,
-the relevant versions (language, runtime, package manager, the project
-itself), and how you set the project up. Then the challenges you faced
-and how you solved them, or that none came up.]
+- Operating System: Linux (WSL2 / Ubuntu 22.04 on Windows)
+- Node.js runtime: v22.23.3 (executed on v22.23.3; repository pins v24.19.0 in `frontend/.nvmrc`)
+- Package manager: npm v10.9.2
+- Target repository: `HHS/simpler-grants-gov`
+- Commit SHA: `e6bb081e7739f9da7a1e35b3b6e7d94d5a2fcade`
+- Working directory: `frontend/`
+
+Challenges: The repository's `.nvmrc` specifies Node `v24.19.0`, which differed from the local `v22.23.3` runtime. Executing through `frontend/` with legacy peer dependency handling permitted consistent test execution, and the version mismatch was explicitly disclosed in the reproduction report.
 
 **Steps to Reproduce**
 
-1. [Step 1]
-2. [Step 2]
-3. [Observed result]
+1. Navigate to the frontend workspace: `cd frontend`
+2. Create an isolated unit test in `repro.test.ts` passing the raw backend validation error string from Issue #6192 (`"'275760-01-01' is not a 'date'"`) to `formatValidationWarning("project_end_date", rawBackendError)`.
+3. Run `npm test -- repro.test.ts` to assert against the expected `MM-DD-YYYY` format.
+4. Observed result: Jest fails with `Expected pattern: /MM-DD-YYYY/i` and `Received string: "275760-01-01 is not a date"`.
 
 **Reproduction Evidence**
 
-- **Commit showing reproduction:** [link to commit in your fork]
-- **Screenshots/logs:** [if applicable]
-- **My findings:** [what you discovered during reproduction; an
-  honest, evidenced cannot-reproduce that led you to re-pick or ask
-  the maintainer belongs here and costs you nothing]
+- **Commit showing reproduction:** Verified on commit `e6bb081e7739f9da7a1e35b3b6e7d94d5a2fcade` (temporary test file `repro.test.ts` removed prior to branch commit).
+- **Screenshots/logs:** Verbatim test run output from `npm test -- repro.test.ts` demonstrating received string `"275760-01-01 is not a date"`, and GitHub reproduction comment posted on thread: <https://github.com/HHS/simpler-grants-gov/issues/6192#issuecomment-6590808029>.
+- **My findings:** The backend JSON schema validator emits full-date errors formatted in ISO standard. The frontend utility `validationWarningOverrides` in `applyFormUtils.ts` strips single quotes, but has no transformation rule for date patterns, passing the ISO string directly to the UI.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: repro-check (via Claude Code terminal execution)
+- What it produced: An `accept` grade confirming verbatim failing output matching the acceptance criteria of #6192.
+- Difficulties: Required multiple iterations because the grader rejected mock component assertions and mock form state runs that did not execute real validation pipelines.
+- What changed: Extracted the transformation utility into an unmocked unit test asserting the exact string from the maintainer's screenshot.
 
 ---
 
@@ -154,29 +152,26 @@ and how you solved them, or that none came up.]
 
 **Analysis**
 
-[Your analysis of the root cause: what is causing the issue, traced
-to the files and functions involved.]
+The bug originates in `frontend/src/utils/applyForm/applyFormUtils.ts`. When the backend schema validator rejects a date input, it returns an ISO error string such as `'YYYY-MM-DD' is not a 'date'`. In `validationWarningOverrides`, incoming error messages only undergo single-quote stripping and generic required-property replacement. Because no date-specific parsing or replacement is executed, the user sees raw ISO dates (e.g. `"275760-01-01 is not a date"`), conflicting with the form's `MM/DD/YYYY` helper guidance.
 
 **Proposed Solution**
 
-[High-level description of your fix approach, and what you are
-deliberately NOT changing.]
+Standardize explicitly on `MM-DD-YYYY` format in date validation feedback to satisfy the issue's acceptance criteria. Update `validationWarningOverrides` in `frontend/src/utils/applyForm/applyFormUtils.ts` to detect date format error messages using regular expressions (`/'?(\d{4})-(\d{2})-(\d{2})'? is not a '?date'?/i`), reorder the date components into `$2-$3-$1` (`MM-DD-YYYY`), and instruct the user to use `MM-DD-YYYY` format. Also transform generic format errors (`must match format "date"`) into `${formattedTitle} must be a valid date in MM-DD-YYYY format.`.
+
+Deliberately out of scope: No changes to backend schema validators, API endpoints, or non-date validation warning transforms.
 
 **Implementation Plan**
 
-1. [Modify file X to do Y]
-2. [Add or change Z]
-3. [Update tests]
-
-[Record deviations here as they happen: what changed mid-build and
-why. A recorded deviation is honest work; silent drift is not.]
+1. Add unit test assertions in `frontend/src/utils/applyForm/applyFormUtils.test.ts` under `describe("formatValidationWarning")` verifying both specific ISO date error strings and generic date format warnings return messages specifying `MM-DD-YYYY`.
+2. Update `validationWarningOverrides` in `frontend/src/utils/applyForm/applyFormUtils.ts` to match date error patterns, reorder ISO date strings into `MM-DD-YYYY`, and output explicit format instructions.
+3. Verify the changes by running `npm --prefix frontend test -- applyFormUtils.test.ts` and `npm --prefix frontend run lint`.
 
 **Toolkit**
 
-- Tool:
-- What it produced:
-- Difficulties:
-- What changed:
+- Tool: plan-check
+- What it produced: An `accept` verdict on `plan.md` and `plan-comment.md` for issue #6192.
+- Difficulties: Initial submission rejected for ungrounded diagnosis (reproduction had not yet landed on the live issue thread) and ambiguous date formatting (`MM/DD/YYYY` vs `MM-DD-YYYY`).
+- What changed: Posted the reproduction comment to issue #6192, committed strictly to `MM-DD-YYYY` per the acceptance criteria, and defined the exact capture-group regex (`$2-$3-$1`) in `plan.md`.
 
 ---
 
