@@ -68,7 +68,7 @@ I configured `ship-manifest.md` to gate outgoing code against repository test su
 
 **Unit 8: Post-ship monitoring and playbook-driven lifecycle management**
 
-I installed `pr-monitor` and configured `playbook.md` with explicit staleness thresholds (7 calendar days for first review), non-defensive response rules, and walk-away criteria tailored to `simpler-grants-gov`. The live monitor read PR #13119 in a `QUIET` state under a day since opening, drafting an honest wait decision in accordance with my quiet threshold rather than sending an premature nudge.
+I installed `pr-monitor` and configured `playbook.md` with explicit staleness thresholds (7 calendar days for first review), non-defensive response rules, and walk-away criteria tailored to `simpler-grants-gov`. The live monitor read PR #13119 in a `QUIET` state under a day since opening, drafting an honest wait decision in accordance with my quiet threshold rather than sending a premature nudge. When maintainer feedback arrived requesting manual verification steps, the monitor surfaced the request in its run report. I updated `pr_draft.md` with explicit browser steps, pushed the update to the PR description via `gh pr edit`, and routed my reply through the voice guard before re-requesting review.
 
 ---
 
@@ -208,6 +208,10 @@ Reproduced the issue locally and posted verbatim Jest output to GitHub issue #61
 
 Implemented date regex pattern matching inside `validationWarningOverrides`. Initial test execution revealed that 6-digit years (such as `275760`) left leading digits intact when matched with `\d{4}`; expanded the capture group to `\d{4,}` to consume extended years cleanly. Resolved TypeScript linting errors regarding unused variables, verified all 62 unit tests passed, and cleared the ship-gate pipeline for PR creation.
 
+**2026-11-16**
+
+Reviewed maintainer feedback from `@serverless-mom` requesting manual browser verification steps and inspected the failing `FE Lint, Type Check, Format & Tests` GitHub Actions check, which flagged Prettier formatting in `applyFormUtils.test.ts`. Ran `npx prettier --write src/utils/applyForm/applyFormUtils.test.ts` inside `frontend/` (since `npx --prefix` from the repo root failed to resolve `@ianvs/prettier-plugin-sort-imports`), verified `npm run format-check` passed cleanly, and pushed the formatting fix. Updated the PR description via `gh api` (bypassing a `gh pr edit` Projects-classic GraphQL deprecation error) and posted the review response through `voice-guard`.
+
 **Toolkit**
 
 - Tool: Claude Code, Gemini & git
@@ -226,15 +230,17 @@ Implemented date regex pattern matching inside `validationWarningOverrides`. Ini
 **Maintainer Feedback:**
 
 - 2026-11-03: Opened PR; awaiting initial CI review and maintainer assignment.
+- 2026-11-06: Maintainer @serverless-mom requested manual UI reproduction and validation steps in the PR description.
+- 2026-11-16: Updated PR description with local manual verification steps (run dev server, navigate to form, input `01/01/275760`, verify error banner), formatted `applyFormUtils.test.ts` with Prettier to fix the failing CI format check, and replied on thread.
 
-**Status:** Awaiting review
+**Status:** Iterating
 
 **Toolkit**
 
 - Tool: ship-gate, gh CLI & pr-monitor
-- What it produced: Pull request #13119 opened successfully upstream against `HHS/simpler-grants-gov:main`; pr-monitor confirmed `QUIET` state under a day old and drafted an honest wait note.
+- What it produced: Pull request #13119 opened successfully upstream against `HHS/simpler-grants-gov:main`; pr-monitor confirmed `QUIET` state under a day old and drafted an honest wait note; pr-monitor surfaced both the maintainer comment and the 1 failing CI check (format-check) on 2026-11-16, and note the gh api workaround for updating the PR body.
 - Difficulties: Cross-fork target mismatch on initial PR submission (`--head rdv-chio:...`), and avoiding premature maintainer pings during initial quiet cycles.
-- What changed: Structured `pr_draft.md` to match repo template sections, passed explicit fork head in `gh pr create`, and enforced a 7-day staleness threshold in `playbook.md` to honor review rhythms.
+- What changed: Structured `pr_draft.md` and `pr_draft_2.md` to match repo template sections, passed explicit fork head in `gh pr create`, and enforced a 7-day staleness threshold in `playbook.md` to honor review rhythms.
 
 ---
 
